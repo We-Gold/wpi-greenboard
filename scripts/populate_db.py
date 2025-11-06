@@ -296,14 +296,16 @@ def populate_packages(cur):
 
 def populate_transactions(cur):
     """Populates the transactions table from transaction_data.csv."""
-    print("Populating transactions table...")
+    print("Populating transactions table...2")
     try:
         with open('transaction_data.csv', mode='r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
-                tracking_number = row.get('Tracking Number')
-                if not tracking_number:
+                tracking_number_raw = row.get('Tracking Number')
+                if not tracking_number_raw:
                     continue
+
+                tracking_number = tracking_number_raw.rstrip('_')
 
                 cur.execute("SELECT package_id FROM packages WHERE tracking_number = %s;", (tracking_number,))
                 package_id_result = cur.fetchone()
@@ -316,14 +318,16 @@ def populate_transactions(cur):
                     if row.get(f'Date Delivered {i}'):
                         cur.execute(
                             "INSERT INTO transactions (date, transaction_type, locker, location, package_id) VALUES (%s, %s, %s, %s, %s);",
-                            (row[f'Date Delivered {i}'], 'delivered', row.get(f'Locker Number {i}'), row.get(f'Delivered Location1 {i}'), package_id)
+                            (row[f'Date Delivered {i}'], 'delivered', row.get(f'Locker Number {i}'),
+                             row.get(f'Delivered Location1 {i}'), package_id)
                         )
 
                     # Stored transaction
                     if row.get(f'Date Stored {i}'):
                         cur.execute(
                             "INSERT INTO transactions (date, transaction_type, locker, location, package_id) VALUES (%s, %s, %s, %s, %s);",
-                            (row[f'Date Stored {i}'], 'stored', row.get(f'Locker Number {i}'), row.get(f'stored Location1 {i}'), package_id)
+                            (row[f'Date Stored {i}'], 'stored', row.get(f'Locker Number {i}'),
+                             row.get(f'stored Location1 {i}'), package_id)
                         )
 
                     # Routed transaction
@@ -378,7 +382,7 @@ def populate_db():
         populate_transactions(cur)
         conn.commit()
 
-        print("\nDatabase population complete!!!")
+        print("\nDatabase populaticon complete!!!!")
 
     except Exception as e:
         print(f"An error occurred: {e}", file=sys.stderr)
