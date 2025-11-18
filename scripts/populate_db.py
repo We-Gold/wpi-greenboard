@@ -114,42 +114,95 @@ def populate_emissions(cur):
 
 
 def populate_persons(cur):
-    """Populates the persons table from package_data.csv."""
-    print("Populating persons table...")
+    """Populates the persons and departments tables from package_data.csv."""
+    print("Populating persons and departments tables...")
     persons = {}
+    
+    # Realistic WPI Departments
+    DEPARTMENTS = [
+        "Computer Science", "Robotics Engineering", "Mechanical Engineering",
+        "Electrical & Computer Engineering", "Biomedical Engineering",
+        "Chemical Engineering", "Civil & Environmental Engineering",
+        "Aerospace Engineering", "Interactive Media & Game Development",
+        "Mathematical Sciences", "Physics", "Chemistry & Biochemistry",
+        "Biology & Biotechnology", "Humanities & Arts", "Social Science & Policy Studies",
+        "Business", "Fire Protection Engineering"
+    ]
+    
+    CLASS_YEARS = [2026, 2027, 2028, 2029]
+
     try:
+        # First pass: Count packages per person to influence class year
+        package_counts = {}
         with open('package_data.csv', mode='r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 location_1 = row.get('Location 1')
-                # Check if Location 1 is a 4-digit number
                 if location_1 and re.match(r'^\d{4}$', location_1):
-                    # Pad to 9 chars for wpi_id
+                    wpi_id = location_1.zfill(9)
+                    package_counts[wpi_id] = package_counts.get(wpi_id, 0) + 1
+
+        # Second pass: Generate person data
+        with open('package_data.csv', mode='r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                location_1 = row.get('Location 1')
+                if location_1 and re.match(r'^\d{4}$', location_1):
                     wpi_id = location_1.zfill(9)
                     if wpi_id not in persons:
+                        # Determine class year based on package count
+                        # Logic: Higher package count -> Higher probability of being Freshmen (2029)
+                        # We'll use weights. Base weight 1.
+                        # Bonus weight for 2029 based on package count.
+                        count = package_counts.get(wpi_id, 0)
+                        
+                        # Weights for [2026, 2027, 2028, 2029]
+                        # 2029 gets a boost proportional to package count
+                        # Example: if count is 0, weight is 1. If count is 10, weight is 6.
+                        w_2029 = 1 + (count * 0.5) 
+                        weights = [1, 1, 1, w_2029]
+                        
+                        class_year = random.choices(CLASS_YEARS, weights=weights, k=1)[0]
+                        
                         persons[wpi_id] = {
                             "box_number": location_1,
                             "first_name": random.choice(COLORS),
-                            "last_name": random.choice(ANIMALS).capitalize()
+                            "last_name": random.choice(ANIMALS).capitalize(),
+                            "class_year": class_year,
+                            "department": random.choice(DEPARTMENTS)
                         }
 
-        insert_sql = """
+        insert_person_sql = """
         INSERT INTO persons (wpi_id, first_name, last_name, is_student, is_mailroom_worker, box_number, class_year, supervisor_id)
-        VALUES (%s, %s, %s, %s, %s, %s, NULL, NULL)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, NULL)
         ON CONFLICT (wpi_id) DO NOTHING;
+        """
+        
+        insert_dept_sql = """
+        INSERT INTO departments (person_id, department_name)
+        VALUES (%s, %s)
+        ON CONFLICT (person_id, department_name) DO NOTHING;
         """
 
         for wpi_id, data in persons.items():
-            cur.execute(insert_sql, (
+            # Insert Person
+            cur.execute(insert_person_sql, (
                 wpi_id,
                 data['first_name'],
                 data['last_name'],
                 True,  # is_student
                 False,  # is_mailroom_worker
-                data['box_number']
+                data['box_number'],
+                data['class_year']
+            ))
+            
+            # Insert Department
+            cur.execute(insert_dept_sql, (
+                wpi_id,
+                data['department']
             ))
 
-        print(f"Populated {len(persons)} persons.")
+        print(f"Populated {len(persons)} persons and their departments.")
 
     except Exception as e:
         print(f"Error populating persons: {e}", file=sys.stderr)
@@ -311,7 +364,7 @@ def populate_db():
         populate_emissions(cur)
         conn.commit()
 
-        # 3. persons (no dependencies)
+        # 3. persons and departments (no dependencies)
         populate_persons(cur)
         conn.commit()
 
