@@ -66,6 +66,11 @@ if not df.empty:
             timeline_df = timeline_df[timeline_df["period"].notnull() & (timeline_df["period"].astype(str) != "None")]
 
         if timeline_df.shape[0] > 1:
+            # Add empty rows for any missing periods in the timeline
+            timeline_df['period'] = pd.to_datetime(timeline_df['period'])
+            timeline_df = timeline_df.set_index('period').resample('D').asfreq().fillna(0).reset_index()
+            timeline_df['period'] = timeline_df['period'].dt.strftime('%Y-%m-%d')
+
             # Plot the timeline of emissions over time
             st.area_chart(timeline_df.set_index('period')['package_count'], height=300, width=700, x_label="Period", y_label="Number of Packages", use_container_width=True)
 
