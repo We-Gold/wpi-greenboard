@@ -62,11 +62,13 @@ def render_timeline(df: pd.DataFrame, interval: str):
     total_emissions = df["total_emissions_kg"].sum()
     total_periods = len(df)
     total_packages = df["package_count"].sum()
+    total_trees_planted = df["total_trees_planted"].sum()
 
-    m1, m2, m3 = st.columns(3)
+    m1, m2, m3, m4 = st.columns(4)
     m1.metric("Total emissions (kg CO2e)", f"{total_emissions:.2f}")
     m2.metric("Total packages", int(total_packages))
     m3.metric("Periods shown", int(total_periods))
+    m4.metric("Equivalent trees planted", f"{total_trees_planted:.2f}")
 
     # Plot emissions over time
     try:
@@ -92,7 +94,7 @@ if scope == "By Major":
                 df = df[df["period"].notnull() & (df["period"].astype(str) != "None")]
             if not df.empty:
                 # ensure numeric types
-                for col in ["total_emissions_kg", "avg_emissions_per_package_kg", "package_count"]:
+                for col in ["total_emissions_kg", "avg_emissions_per_package_kg", "package_count", "total_trees_planted", "total_miles_driven"]:
                     if col in df.columns:
                         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
             render_timeline(df, interval)
@@ -116,7 +118,7 @@ else:
         if "period" in df.columns:
             df = df[df["period"].notnull() & (df["period"].astype(str) != "None")]
         if not df.empty:
-            for col in ["total_emissions_kg", "avg_emissions_per_package_kg", "package_count", "total_distance_km"]:
+            for col in ["total_emissions_kg", "avg_emissions_per_package_kg", "package_count", "total_distance_km", "total_trees_planted", "total_miles_driven"]:
                 if col in df.columns:
                     df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
         render_timeline(df, interval)
