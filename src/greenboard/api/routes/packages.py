@@ -113,7 +113,9 @@ async def get_packages_by_student(
             Package.service_type,
             Package.date_shipped,
             Package.total_emissions_kg,
-            Package.distance_traveled
+            Package.distance_traveled,
+            Package.equivalent_trees_planted,
+            Package.equivalent_miles_driven
         )
         .where(Package.recipient_id == wpi_id)
         .join(Carrier, Package.carrier_id == Carrier.carrier_id, isouter=True)
@@ -129,7 +131,9 @@ async def get_packages_by_student(
             service_type=r[3],
             date_shipped=r[4],
             total_emissions_kg=r[5],
-            distance_traveled=r[6]
+            distance_traveled=r[6],
+            equivalent_trees_planted=r[7],
+            equivalent_miles_driven=r[8]
         )
         for r in results
     ]

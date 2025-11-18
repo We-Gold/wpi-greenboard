@@ -66,6 +66,11 @@ if not df.empty:
             timeline_df = timeline_df[timeline_df["period"].notnull() & (timeline_df["period"].astype(str) != "None")]
 
         if timeline_df.shape[0] > 1:
+            # Add empty rows for any missing periods in the timeline
+            timeline_df['period'] = pd.to_datetime(timeline_df['period'])
+            timeline_df = timeline_df.set_index('period').resample('D').asfreq().fillna(0).reset_index()
+            timeline_df['period'] = timeline_df['period'].dt.strftime('%Y-%m-%d')
+
             # Plot the timeline of emissions over time
             st.area_chart(timeline_df.set_index('period')['package_count'], height=300, width=700, x_label="Period", y_label="Number of Packages", use_container_width=True)
 
@@ -117,9 +122,9 @@ if not df.empty:
             #     st.markdown(f"**Main Transit Emissions:** {row['Main Transit Emissions (kg CO2e)']:.4f} kg CO2e")
             #     st.markdown(f"**Last Mile Emissions:** {row['Last Mile Emissions (kg CO2e)']:.4f} kg CO2e")
 
-            # with st.expander("🌳 Environmental Impact", expanded=False):
-            #     st.markdown(f"**Trees Needed (1 year):** {row['Tree needed (1 year)']:.2f}")
-            #     st.markdown(f"**Equivalent Miles Driven:** {row['Equivalent miles driven']:.2f} miles")
+            with st.expander("🌳 Environmental Impact", expanded=False):
+                st.markdown(f"**Equivalent Trees Planted:** {row['equivalent_trees_planted']:.2f}")
+                st.markdown(f"**Equivalent Miles Driven:** {row['equivalent_miles_driven']:.2f} miles")
 
         st.markdown("<br>", unsafe_allow_html=True)
 

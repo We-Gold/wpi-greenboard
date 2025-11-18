@@ -71,7 +71,9 @@ async def get_person_emissions_timeline(
             {date_trunc_map[interval]} AS period,
             COUNT(pk.package_id) AS package_count,
             COALESCE(SUM(pk.total_emissions_kg), 0) AS total_emissions,
-            COALESCE(AVG(pk.total_emissions_kg), 0) AS avg_emissions_per_package
+            COALESCE(AVG(pk.total_emissions_kg), 0) AS avg_emissions_per_package,
+            COALESCE(SUM(pk.equivalent_trees_planted), 0) AS total_trees_planted,
+            COALESCE(SUM(pk.equivalent_miles_driven), 0) AS total_miles_driven
         FROM packages pk
         JOIN persons p ON pk.recipient_id = p.wpi_id
         WHERE p.wpi_id = '{wpi_id}'
@@ -86,12 +88,14 @@ async def get_person_emissions_timeline(
         raise HTTPException(status_code=404, detail="Person not found or no package data available")
     
     timeline = []
-    for period, package_count, total_emissions, avg_emissions in results:
+    for period, package_count, total_emissions, avg_emissions, total_trees_planted, total_miles_driven in results:
         timeline.append({
             "period": str(period),
             "package_count": package_count,
             "total_emissions_kg": round(total_emissions, 2),
-            "avg_emissions_per_package_kg": round(avg_emissions, 2)
+            "avg_emissions_per_package_kg": round(avg_emissions, 2),
+            "total_trees_planted": round(total_trees_planted, 2),
+            "total_miles_driven": round(total_miles_driven, 2)
         })
     
     return {
@@ -142,7 +146,9 @@ async def get_major_emissions_timeline(
             COUNT(pk.package_id) AS package_count,
             COUNT(DISTINCT p.wpi_id) AS unique_students,
             COALESCE(SUM(pk.total_emissions_kg), 0) AS total_emissions,
-            COALESCE(AVG(pk.total_emissions_kg), 0) AS avg_emissions_per_package
+            COALESCE(AVG(pk.total_emissions_kg), 0) AS avg_emissions_per_package,
+            COALESCE(SUM(pk.equivalent_trees_planted), 0) AS total_trees_planted,
+            COALESCE(SUM(pk.equivalent_miles_driven), 0) AS total_miles_driven
         FROM packages pk
         JOIN persons p ON pk.recipient_id = p.wpi_id
         JOIN departments d ON p.wpi_id = d.person_id
@@ -159,13 +165,15 @@ async def get_major_emissions_timeline(
         raise HTTPException(status_code=404, detail="Major/department not found or no package data available")
     
     timeline = []
-    for period, package_count, unique_students, total_emissions, avg_emissions in results:
+    for period, package_count, unique_students, total_emissions, avg_emissions, total_trees_planted, total_miles_driven in results:
         timeline.append({
             "period": str(period),
             "package_count": package_count,
             "unique_students": unique_students,
             "total_emissions_kg": round(total_emissions, 2),
-            "avg_emissions_per_package_kg": round(avg_emissions, 2)
+            "avg_emissions_per_package_kg": round(avg_emissions, 2),
+            "total_trees_planted": round(total_trees_planted, 2),
+            "total_miles_driven": round(total_miles_driven, 2)
         })
     
     return {
@@ -220,7 +228,9 @@ async def get_all_emissions_timeline(
             COUNT(DISTINCT pk.recipient_id) AS unique_recipients,
             COALESCE(SUM(pk.total_emissions_kg), 0) AS total_emissions,
             COALESCE(AVG(pk.total_emissions_kg), 0) AS avg_emissions_per_package,
-            COALESCE(SUM(pk.distance_traveled), 0) AS total_distance_km
+            COALESCE(SUM(pk.distance_traveled), 0) AS total_distance_km,
+            COALESCE(SUM(pk.equivalent_trees_planted), 0) AS total_trees_planted,
+            COALESCE(SUM(pk.equivalent_miles_driven), 0) AS total_miles_driven
         FROM packages pk
         LEFT JOIN persons p ON pk.recipient_id = p.wpi_id
         WHERE 1=1
@@ -233,14 +243,16 @@ async def get_all_emissions_timeline(
     results = db.exec(query).all()
     
     timeline = []
-    for period, package_count, unique_recipients, total_emissions, avg_emissions, total_distance in results:
+    for period, package_count, unique_recipients, total_emissions, avg_emissions, total_distance, total_trees_planted, total_miles_driven in results:
         timeline.append({
             "period": str(period),
             "package_count": package_count,
             "unique_recipients": unique_recipients,
             "total_emissions_kg": round(total_emissions, 2),
             "avg_emissions_per_package_kg": round(avg_emissions, 2),
-            "total_distance_km": round(total_distance, 2)
+            "total_distance_km": round(total_distance, 2),
+            "total_trees_planted": round(total_trees_planted, 2),
+            "total_miles_driven": round(total_miles_driven, 2)
         })
     
     return {
