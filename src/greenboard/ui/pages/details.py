@@ -117,9 +117,9 @@ if not df.empty:
             #     st.markdown(f"**Main Transit Emissions:** {row['Main Transit Emissions (kg CO2e)']:.4f} kg CO2e")
             #     st.markdown(f"**Last Mile Emissions:** {row['Last Mile Emissions (kg CO2e)']:.4f} kg CO2e")
 
-            # with st.expander("🌳 Environmental Impact", expanded=False):
-            #     st.markdown(f"**Trees Needed (1 year):** {row['Tree needed (1 year)']:.2f}")
-            #     st.markdown(f"**Equivalent Miles Driven:** {row['Equivalent miles driven']:.2f} miles")
+            with st.expander("🌳 Environmental Impact", expanded=False):
+                st.markdown(f"**Equivalent Trees Planted:** {row['equivalent_trees_planted']:.2f}")
+                st.markdown(f"**Equivalent Miles Driven:** {row['equivalent_miles_driven']:.2f} miles")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
