@@ -122,14 +122,49 @@ else:
     page = st.session_state.student_page
     start_idx = (page - 1) * num_entries
     end_idx = start_idx + num_entries
-    df = df.iloc[start_idx:end_idx].copy()
-    df = df.set_index("Rank")
-    
-    # Show pagination info and table
+    display_df = df.iloc[start_idx:end_idx].copy()
+    display_df = display_df.set_index("Rank")
+
+    # Show pagination info
     if total_pages > 1:
         st.write(f"Showing students {start_idx + 1}-{min(end_idx, total_students)} of {total_students}")
 
-    st.table(df)
+    # Render table-like rows where clicking the student's name navigates to a details page
+    # We'll render each row as columns with a clickable button so we can set query params
+    st.write("")
+    # Header row
+    c_rank, c_name, c_emissions, c_action = st.columns([1, 4, 3, 2])
+    # c_rank, c_name, c_major, c_emissions, c_action = st.columns([1, 4, 3, 3, 2])
+    c_rank.markdown("**Rank**")
+    c_name.markdown("**Name**")
+    # c_major.markdown("**Major**")
+    c_emissions.markdown("**Carbon Emissions (kg CO2e)**")
+    c_action.markdown("**Details**")
+
+    for idx, row in display_df.reset_index().iterrows():
+        rank = row["Rank"]
+        name = row.get("Name", "")
+        # major = row.get("Major", "")
+        emissions = row.get("Carbon Emissions (kg CO2e)", "")
+
+        c_rank, c_name, c_emissions, c_action = st.columns([1, 4, 3, 2])
+        # c_rank, c_name, c_major, c_emissions, c_action = st.columns([1, 4, 3, 3, 2])
+        c_rank.write(rank)
+        c_name.write(name)
+        # c_major.write(major)
+        c_emissions.write(emissions)
+
+        # Provide an explicit "View" button in the action column for clarity/accessibility
+        action_key = f"student_view_{rank}_{idx}"
+        if c_action.button("View", key=action_key):
+            # Set session storage variables for the selected student
+            st.session_state.selected_student = {
+                "rank": rank,
+                "name": name,
+                # "major": major,
+                "wpi_id": row.get("wpi_id", None)
+            }
+            st.switch_page("pages/details.py")
     
     # Page selector below the table
     if total_pages > 1:

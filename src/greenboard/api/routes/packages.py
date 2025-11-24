@@ -33,8 +33,6 @@ async def get_packages(
     )
     
     results = db.exec(statement).all()
-
-    print(results)
     
     return [
         PackageRead(
@@ -99,3 +97,43 @@ async def get_package_by_tracking(
         raise HTTPException(status_code=404, detail="Package not found")
     
     return await get_package(package.package_id, session)
+
+@router.get("/student/{wpi_id}", response_model=List[PackageRead])
+async def get_packages_by_student(
+    wpi_id: str,
+    db: Session = Depends(get_session)
+):
+    """Get all packages by student WPI ID."""
+
+    statement = (
+        select(
+            Package.package_id,
+            Package.tracking_number,
+            Carrier.carrier_name,
+            Package.service_type,
+            Package.date_shipped,
+            Package.total_emissions_kg,
+            Package.distance_traveled,
+            Package.equivalent_trees_planted,
+            Package.equivalent_miles_driven
+        )
+        .where(Package.recipient_id == wpi_id)
+        .join(Carrier, Package.carrier_id == Carrier.carrier_id, isouter=True)
+    )
+    
+    results = db.exec(statement).all()
+    
+    return [
+        PackageRead(
+            package_id=r[0],
+            tracking_number=r[1],
+            carrier_name=r[2],
+            service_type=r[3],
+            date_shipped=r[4],
+            total_emissions_kg=r[5],
+            distance_traveled=r[6],
+            equivalent_trees_planted=r[7],
+            equivalent_miles_driven=r[8]
+        )
+        for r in results
+    ]

@@ -22,6 +22,7 @@ async def get_student_leaderboard(
         SELECT 
             p.first_name,
             p.last_name,
+            p.wpi_id,
             COALESCE(SUM(pk.total_emissions_kg), 0) AS total_emissions,
             d.department_name AS major
         FROM persons p
@@ -35,10 +36,11 @@ async def get_student_leaderboard(
     results = db.exec(query).all()
 
     leaderboard = []
-    for rank, (first_name, last_name, emissions, major) in enumerate(results, start=1):
+    for rank, (first_name, last_name, wpi_id, emissions, major) in enumerate(results, start=1):
         leaderboard.append({
             "rank": rank,
             "name": f"{first_name} {last_name}",  # anonymized display
+            "wpi_id": wpi_id,
             "carbon_emissions_kg": round(emissions or 0, 2),
             "major": major
         })

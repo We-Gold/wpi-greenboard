@@ -49,6 +49,8 @@ CREATE TABLE packages (
     date_shipped TIMESTAMP,
     total_emissions_kg FLOAT,
     distance_traveled FLOAT,
+    equivalent_trees_planted FLOAT,
+    equivalent_miles_driven FLOAT,
     CONSTRAINT packages_recipient_fk
         FOREIGN KEY (recipient_id)
         REFERENCES persons(wpi_id)
@@ -87,3 +89,19 @@ CREATE TABLE transactions (
         ON DELETE SET NULL  -- keep transaction if worker is deleted
         ON UPDATE CASCADE
 );
+
+CREATE OR REPLACE FUNCTION update_emission_formats() RETURNS TRIGGER AS $em$
+BEGIN
+    IF NEW.total_emissions_kg IS NOT NULL THEN
+        NEW.equivalent_trees_planted := NEW.total_emissions_kg / 21.0; -- 1 tree absorbs 21.0 kg CO2 per year
+        NEW.equivalent_miles_driven := NEW.total_emissions_kg / 0.404; -- 1 mile driven emits 0.404 kg CO2
+    END IF;
+    RETURN NEW;
+END;
+$em$ LANGUAGE plpgsql;
+
+CREATE TRIGGER packages_alternate_emission_formats 
+BEFORE INSERT OR UPDATE ON packages
+FOR EACH ROW
+EXECUTE FUNCTION update_emission_formats();
+
