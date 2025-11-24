@@ -3,6 +3,8 @@ import pandas as pd
 import requests
 import os
 
+st.set_page_config(page_title="WPI Greenboard", page_icon="🏆")
+
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 st.markdown("# 🌱 WPI Greenboard")
@@ -164,7 +166,7 @@ else:
                 # "major": major,
                 "wpi_id": row.get("wpi_id", None)
             }
-            st.switch_page("pages/details.py")
+            st.switch_page("pages/Details.py")
     
     # Page selector below the table
     if total_pages > 1:
