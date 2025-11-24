@@ -35,4 +35,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "app/src/greenboard/ui/Leaderboard.py"]
+CMD ["streamlit", "run", "app/src/greenboard/ui/🏆 Leaderboard.py"]
