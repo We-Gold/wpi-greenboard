@@ -174,99 +174,97 @@ async def get_service_type_stats_by_major(
         "rows": rows,
     }
 
-# NOTE : DISABLED AS CLASS YEAR IS NOT POPULATING CORRECTLY
 
-# @router.get("/by-class-year")
-# async def get_service_type_stats_by_class_year(
-#     db: Session = Depends(get_session),
-#     students_only: bool = Query(
-#         True,
-#         description="If true, only include packages where the recipient is a student"
-#     )
-# ):
-#     """
-#     Service-type statistics grouped by class year bucket.
-#     """
+@router.get("/by-class-year")
+async def get_service_type_stats_by_class_year(
+    db: Session = Depends(get_session),
+    students_only: bool = Query(
+        True,
+        description="If true, only include packages where the recipient is a student"
+    )
+):
+    """
+    Service-type statistics grouped by class year bucket.
+    """
 
-#     student_filter = ""
-#     if students_only:
-#         student_filter = "AND p.is_student = TRUE "
+    student_filter = ""
+    if students_only:
+        student_filter = "AND p.is_student = TRUE "
 
-#     query = text(f"""
-#         WITH classified AS (
-#             SELECT
-#                 pk.*,
-#                 p.class_year,
-#                 CASE
-#                     WHEN p.class_year IS NULL THEN 'Unknown'
-#                     WHEN p.class_year BETWEEN 1 AND 4
-#                         THEN 'Year ' || p.class_year::text
-#                     WHEN p.class_year > 4 THEN 'Graduate'
-#                     ELSE 'Unknown'
-#                 END AS class_year_group
-#             FROM packages pk
-#             JOIN persons p ON pk.recipient_id = p.wpi_id
-#             WHERE 1=1
-#             {student_filter}
-#         ),
-#         base AS (
-#             SELECT
-#                 class_year_group,
-#                 COALESCE(service_type, 'Unknown') AS service_type,
-#                 COUNT(*) AS package_count,
-#                 COALESCE(SUM(total_emissions_kg), 0) AS total_emissions_kg,
-#                 COALESCE(AVG(total_emissions_kg), 0) AS avg_emissions_per_package_kg
-#             FROM classified
-#             GROUP BY
-#                 class_year_group,
-#                 COALESCE(service_type, 'Unknown')
-#         )
-#         SELECT
-#             class_year_group,
-#             service_type,
-#             package_count,
-#             ROUND(
-#                 100.0 * package_count /
-#                 NULLIF(SUM(package_count) OVER (PARTITION BY class_year_group), 0),
-#                 2
-#             ) AS percent_of_year_packages,
-#             total_emissions_kg,
-#             avg_emissions_per_package_kg
-#         FROM base
-#         ORDER BY
-#             class_year_group,
-#             package_count DESC
-#     """)
+    query = text(f"""
+        WITH classified AS (
+            SELECT
+                pk.*,
+                p.class_year,
+                CASE
+                    WHEN p.class_year IS NULL THEN 'Unknown'
+                    WHEN p.class_year BETWEEN 2026 AND 2029
+                        THEN 'Class of ' || p.class_year::text
+                    ELSE 'Unknown'
+                END AS class_year_group
+            FROM packages pk
+            JOIN persons p ON pk.recipient_id = p.wpi_id
+            WHERE 1=1
+            {student_filter}
+        ),
+        base AS (
+            SELECT
+                class_year_group,
+                COALESCE(service_type, 'Unknown') AS service_type,
+                COUNT(*) AS package_count,
+                COALESCE(SUM(total_emissions_kg), 0) AS total_emissions_kg,
+                COALESCE(AVG(total_emissions_kg), 0) AS avg_emissions_per_package_kg
+            FROM classified
+            GROUP BY
+                class_year_group,
+                COALESCE(service_type, 'Unknown')
+        )
+        SELECT
+            class_year_group,
+            service_type,
+            package_count,
+            ROUND(
+                100.0 * package_count /
+                NULLIF(SUM(package_count) OVER (PARTITION BY class_year_group), 0),
+                2
+            ) AS percent_of_year_packages,
+            total_emissions_kg,
+            avg_emissions_per_package_kg
+        FROM base
+        ORDER BY
+            class_year_group,
+            package_count DESC
+    """)
 
-#     results = db.exec(query).all()
+    results = db.exec(query).all()
 
-#     if not results:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="No package data available"
-#         )
+    if not results:
+        raise HTTPException(
+            status_code=404,
+            detail="No package data available"
+        )
 
-#     rows = []
-#     for (
-#         class_year_group,
-#         service_type,
-#         package_count,
-#         percent_of_year_packages,
-#         total_emissions_kg,
-#         avg_emissions_per_package_kg,
-#     ) in results:
-#         rows.append({
-#             "class_year_group": class_year_group,
-#             "service_type": service_type,
-#             "package_count": package_count,
-#             "percent_of_year_packages": float(percent_of_year_packages or 0),
-#             "total_emissions_kg": round(total_emissions_kg or 0, 2),
-#             "avg_emissions_per_package_kg": round(avg_emissions_per_package_kg or 0, 2),
-#         })
+    rows = []
+    for (
+        class_year_group,
+        service_type,
+        package_count,
+        percent_of_year_packages,
+        total_emissions_kg,
+        avg_emissions_per_package_kg,
+    ) in results:
+        rows.append({
+            "class_year_group": class_year_group,
+            "service_type": service_type,
+            "package_count": package_count,
+            "percent_of_year_packages": float(percent_of_year_packages or 0),
+            "total_emissions_kg": round(total_emissions_kg or 0, 2),
+            "avg_emissions_per_package_kg": round(avg_emissions_per_package_kg or 0, 2),
+        })
 
-#     return {
-#         "group_by": "class_year",
-#         "students_only": students_only,
-#         "row_count": len(rows),
-#         "rows": rows,
-#     }
+    return {
+        "group_by": "class_year",
+        "students_only": students_only,
+        "row_count": len(rows),
+        "rows": rows,
+    }
