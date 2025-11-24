@@ -3,7 +3,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
+.env
 db_data/
 .DS_Store
 .vscode/
