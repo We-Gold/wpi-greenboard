@@ -52,6 +52,25 @@ def get_db_connection():
     raise Exception("Database connection failed")
 
 
+def clear_existing_data(cur):
+    """Clear existing data from tables before repopulating to avoid duplicates."""
+    print("Clearing existing data from tables...")
+    try:
+        # Disable foreign key checks temporarily by deleting in correct order
+        # Delete in reverse dependency order
+        cur.execute("TRUNCATE TABLE transactions CASCADE;")
+        cur.execute("TRUNCATE TABLE packages CASCADE;")
+        cur.execute("TRUNCATE TABLE departments CASCADE;")
+        cur.execute("TRUNCATE TABLE persons CASCADE;")
+        cur.execute("TRUNCATE TABLE emissions CASCADE;")
+        # Keep carriers table but clear it (except 'Other' which is in init.sql)
+        cur.execute("DELETE FROM carriers WHERE carrier_name != 'Other';")
+        print("Successfully cleared existing data.")
+    except Exception as e:
+        print(f"Error clearing data: {e}", file=sys.stderr)
+        raise
+
+
 def populate_carriers(cur):
     """Populates the carriers table from package_data.csv."""
     print("Populating carriers table...")
@@ -353,6 +372,10 @@ def populate_db():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
+
+        # Clear existing data first to avoid duplicates on restart
+        clear_existing_data(cur)
+        conn.commit()
 
         # Populate in correct order to respect foreign key constraints
 

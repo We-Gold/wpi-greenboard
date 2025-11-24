@@ -105,3 +105,33 @@ BEFORE INSERT OR UPDATE ON packages
 FOR EACH ROW
 EXECUTE FUNCTION update_emission_formats();
 
+
+-- Carrier Stats View per Person
+
+-- This view aggregates package statistics by carrier for each person
+-- Shows package count, frequency, total emissions, and average emissions per carrier
+CREATE OR REPLACE VIEW person_carrier_stats AS
+SELECT 
+    p.wpi_id,
+    p.first_name,
+    p.last_name,
+    COALESCE(c.carrier_name, 'Unknown') AS carrier_name,
+    COUNT(pk.package_id) AS package_count,
+    ROUND(
+        (COUNT(pk.package_id)::NUMERIC / NULLIF(
+            (SELECT COUNT(*) FROM packages WHERE recipient_id = p.wpi_id), 0
+        )) * 100, 2
+    ) AS frequency_percentage,
+    COALESCE(SUM(pk.total_emissions_kg), 0) AS total_emissions_kg,
+    COALESCE(ROUND(AVG(pk.total_emissions_kg)::NUMERIC, 2), 0) AS avg_emissions_per_package_kg,
+    COALESCE(SUM(pk.distance_traveled), 0) AS total_distance_km,
+    COALESCE(ROUND(AVG(pk.distance_traveled)::NUMERIC, 2), 0) AS avg_distance_per_package_km,
+    COALESCE(SUM(pk.equivalent_trees_planted), 0) AS total_trees_planted,
+    COALESCE(SUM(pk.equivalent_miles_driven), 0) AS total_miles_driven
+FROM persons p
+LEFT JOIN packages pk ON p.wpi_id = pk.recipient_id
+LEFT JOIN carriers c ON pk.carrier_id = c.carrier_id
+WHERE pk.package_id IS NOT NULL  -- Only include persons with packages
+GROUP BY p.wpi_id, p.first_name, p.last_name, c.carrier_name
+ORDER BY p.wpi_id, package_count DESC;
+
