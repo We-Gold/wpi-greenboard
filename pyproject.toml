@@ -5,6 +5,7 @@ description = "Carbon Emissions Leaderboard for WPI"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "altair>=5.5.0",
     "fastapi>=0.118.0",
     "numpy>=2.3.3",
     "pandas>=2.3.2",
