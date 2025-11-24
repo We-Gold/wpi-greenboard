@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select
-from typing import List
+from sqlmodel import Session, select, text
+from typing import List, Dict, Any
 
 from ..database import get_session
 from ..models import Package, Carrier, Emission, PackageRead
@@ -137,3 +137,56 @@ async def get_packages_by_student(
         )
         for r in results
     ]
+
+
+@router.get("/student/{wpi_id}/carrier-stats")
+async def get_carrier_stats_by_student(
+    wpi_id: str,
+    db: Session = Depends(get_session)
+):
+    """
+    Get carrier statistics for a specific student.
+    Returns aggregated package count, frequency, and emissions per carrier.
+    Uses the person_carrier_stats view created in database/init.sql
+    """
+    query = text("""
+        SELECT 
+            carrier_name,
+            package_count,
+            frequency_percentage,
+            total_emissions_kg,
+            avg_emissions_per_package_kg,
+            total_distance_km,
+            avg_distance_per_package_km,
+            total_trees_planted,
+            total_miles_driven
+        FROM person_carrier_stats
+        WHERE wpi_id = :wpi_id
+        ORDER BY package_count DESC
+    """)
+    
+    results = db.exec(query.params(wpi_id=wpi_id)).all()
+    
+    if not results:
+        # Check if student exists but has no packages
+        person_check = text("SELECT wpi_id FROM persons WHERE wpi_id = :wpi_id")
+        person_exists = db.exec(person_check.params(wpi_id=wpi_id)).first()
+        if not person_exists:
+            raise HTTPException(status_code=404, detail="Student not found")
+        return []  # Student exists but has no packages
+    
+    stats = []
+    for row in results:
+        stats.append({
+            "carrier_name": row[0],
+            "package_count": row[1],
+            "frequency_percentage": float(row[2]) if row[2] is not None else 0.0,
+            "total_emissions_kg": float(row[3]) if row[3] is not None else 0.0,
+            "avg_emissions_per_package_kg": float(row[4]) if row[4] is not None else 0.0,
+            "total_distance_km": float(row[5]) if row[5] is not None else 0.0,
+            "avg_distance_per_package_km": float(row[6]) if row[6] is not None else 0.0,
+            "total_trees_planted": float(row[7]) if row[7] is not None else 0.0,
+            "total_miles_driven": float(row[8]) if row[8] is not None else 0.0
+        })
+    
+    return stats

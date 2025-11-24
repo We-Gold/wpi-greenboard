@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import os
+import plotly.express as px
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
@@ -38,6 +39,7 @@ try:
 except requests.exceptions.RequestException:
     st.error("❌ Cannot connect to API")
     df = pd.DataFrame()
+
 
 # Assign emissions constants based on transport mode, carrier, and weight
 transit_emission_factors = {
@@ -132,3 +134,74 @@ if not df.empty:
     missing_data_count = df['total_emissions_kg'].isnull().sum()
     if missing_data_count > 0:
         st.warning(f"⚠️ {missing_data_count} packages were not shown due to missing emissions data.")
+
+# Carrier Stats Section at the bottom (toggleable)
+if selected_student and "wpi_id" in selected_student:
+    st.markdown("---")
+    
+    # Toggle button for carrier stats
+    if st.button("Get Carrier Stats", key="carrier_stats_btn"):
+        st.session_state.show_carrier_stats = not st.session_state.get("show_carrier_stats", False)
+        st.rerun()
+    
+    # Display carrier stats if toggled on
+    if st.session_state.get("show_carrier_stats", False):
+        try:
+            carrier_stats_response = requests.get(f"{API_BASE_URL}/packages/student/{selected_student['wpi_id']}/carrier-stats")
+            if carrier_stats_response.status_code == 200:
+                carrier_stats = carrier_stats_response.json()
+                
+                if carrier_stats:
+                    # Create DataFrame for better display
+                    stats_df = pd.DataFrame(carrier_stats)
+                    
+                    # Display Carrier Usage Frequency chart with hover tooltips
+                    st.markdown("### Carrier Usage Frequency")
+                    
+                    # Create Plotly bar chart with custom hover text
+                    fig = px.bar(
+                        stats_df,
+                        x='carrier_name',
+                        y='frequency_percentage',
+                        labels={
+                            'carrier_name': 'Carrier',
+                            'frequency_percentage': 'Frequency (%)'
+                        },
+                        text='frequency_percentage',
+                        hover_data={
+                            'carrier_name': True,
+                            'frequency_percentage': ':.1f',
+                            'package_count': True
+                        },
+                        custom_data=['package_count']
+                    )
+                    
+                    # Customize hover template to show both package count and percentage
+                    fig.update_traces(
+                        hovertemplate='<b>%{x}</b><br>' +
+                                    'Frequency: %{y:.1f}%<br>' +
+                                    'Package Count: %{customdata[0]}<br>' +
+                                    '<extra></extra>',
+                        texttemplate='%{y:.1f}%',
+                        textposition='outside'
+                    )
+                    
+                    # Update layout
+                    fig.update_layout(
+                        xaxis_title='Carrier',
+                        yaxis_title='Frequency (%)',
+                        showlegend=False,
+                        height=400,
+                        margin=dict(l=20, r=20, t=20, b=20)
+                    )
+                    
+                    st.plotly_chart(fig, use_container_width=True)
+                    
+                else:
+                    st.info("No carrier statistics available. This student has no packages.")
+            elif carrier_stats_response.status_code == 404:
+                st.warning("Student not found.")
+            else:
+                st.error(f"Failed to fetch carrier stats. Status code: {carrier_stats_response.status_code}")
+        except requests.exceptions.RequestException:
+            st.error("❌ Cannot connect to API to fetch carrier stats")
