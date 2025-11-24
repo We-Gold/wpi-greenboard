@@ -4,6 +4,7 @@ from .routes import packages
 from .routes import emissions
 from .routes import timelines
 from .routes import leaderboards
+from .routes import service_types
 
 app = FastAPI(
     title="WPI Greenboard API",
@@ -17,6 +18,7 @@ app.include_router(packages.router)
 app.include_router(leaderboards.router)
 app.include_router(timelines.router)
 app.include_router(emissions.router)
+app.include_router(service_types.router)
 
 @app.get("/")
 async def root():
