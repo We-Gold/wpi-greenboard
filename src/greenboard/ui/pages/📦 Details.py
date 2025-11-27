@@ -18,17 +18,6 @@ else:
     st.markdown("# Student Details")
     st.markdown("### No student selected")
 
-# Package data format:
-# PackageRead(
-#     package_id=r[0],
-#     tracking_number=r[1],
-#     carrier_name=r[2],
-#     service_type=r[3],
-#     date_shipped=r[4],
-#     total_emissions_kg=r[5],
-#     distance_traveled=r[6]
-# )
-
 try:
     if selected_student and "wpi_id" in selected_student:
         df = pd.DataFrame(requests.get(f"{API_BASE_URL}/packages/student/{selected_student['wpi_id']}").json())
@@ -105,28 +94,39 @@ if not df.empty:
             col_details1, col_details2 = st.columns(2)
             
             with col_details1:
-                # st.markdown(f"**Distance:** {row['distance_traveled']} km")
                 st.metric("Distance", row['distance_traveled'])
-                # st.metric("Weight", f"{row['Weight (lbs)']} lbs")
                 st.metric("Carrier", row['carrier_name'])
             
             with col_details2:
-                # st.write(row)
                 st.metric("Transport Mode", row['service_type'])
                 st.metric("Carbon Emissions", f"{row['total_emissions_kg']:.2f} kg CO2e")
-
-            # with st.expander("📍 View Route Details", expanded=False):
-                # st.markdown(f"**Source:** {row['Source']}")
-                # st.markdown(f"**Destination:** {row['Desitination']}")
-                # st.markdown(f"**Distance:** {row['distance_traveled']} km")
-
-            # with st.expander("🚛 Emission Breakdown", expanded=False):
-            #     st.markdown(f"**Main Transit Emissions:** {row['Main Transit Emissions (kg CO2e)']:.4f} kg CO2e")
-            #     st.markdown(f"**Last Mile Emissions:** {row['Last Mile Emissions (kg CO2e)']:.4f} kg CO2e")
 
             with st.expander("🌳 Environmental Impact", expanded=False):
                 st.markdown(f"**Equivalent Trees Planted:** {row['equivalent_trees_planted']:.2f}")
                 st.markdown(f"**Equivalent Miles Driven:** {row['equivalent_miles_driven']:.2f} miles")
+
+            # Add a button to show calculation details
+            with st.expander("🧮 Emissions Calculation Details", expanded=False):
+                try:
+                    calc_details_response = requests.get(f"{API_BASE_URL}/emissions/package/{row['package_id']}/calculation-details")
+                    if calc_details_response.status_code == 200:
+                        calc_details = calc_details_response.json()
+                        
+                        st.markdown("**Calculation Inputs:**")
+                        for key, value in calc_details['calculation_inputs'].items():
+                            st.markdown(f"- **{key.replace('_', ' ').title()}:** {value}")
+
+                        st.markdown("**Calculation Steps:**")
+                        for step_key, step in calc_details['calculation_steps'].items():
+                            st.markdown(f"**{step['description']}**")
+                            st.markdown(f"Formula: `{step['formula']}`")
+                            st.markdown(f"Calculation: `{step['calculation']}`")
+                            st.markdown(f"Result: **{step['result']}**")
+                            st.markdown("---")
+                    else:
+                        st.error(f"Failed to fetch calculation details. Status code: {calc_details_response.status_code}")
+                except requests.exceptions.RequestException:
+                    st.error("❌ Cannot connect to API to fetch calculation details")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
