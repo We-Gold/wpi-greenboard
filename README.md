@@ -13,6 +13,13 @@ Note: This is NOT an official WPI application.
 - Surbhi Kapoor
 - Willem van Oosterum
 
+### Demo Videos
+
+Primary Demo Video: https://drive.google.com/file/d/1pKzOz-jFmtVVJCR2oNqMlbpQ4OLl4k4Y/preview
+
+Carrier Statistics Demo: https://drive.google.com/file/d/1WbYMLhezAD10zno0leaFz2j0cr24_n7A/preview
+
+
 ## Development
 
 We are using `uv` for managing the Python project. 
