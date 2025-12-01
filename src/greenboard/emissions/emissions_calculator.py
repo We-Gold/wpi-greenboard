@@ -203,7 +203,11 @@ class DistanceCalculator:
         
         # Check cache first
         if cache_key in self.cache:
-            return self.cache[cache_key]
+            cached_result = self.cache[cache_key]
+            if cached_result[0] is not None:
+                return cached_result
+            else:
+                return None, None
         
         # Build query - city level only
         query_parts = []
@@ -221,18 +225,19 @@ class DistanceCalculator:
         
         try:
             self._rate_limit()
-            location = self.geocoder.geocode(query)
+            location = self.geocoder.geocode(query, timeout=10)
             
             if location:
                 coords = (location.latitude, location.longitude)
                 self.cache[cache_key] = coords
                 self._save_cache()
                 return coords
-        except Exception:
+        except (GeocoderTimedOut, GeocoderServiceError, Exception):
             pass
         
         # Cache the failure to avoid retrying
         self.cache[cache_key] = (None, None)
+        self._save_cache()
         return None, None
     
     def geocode_address(self, address: Address, max_retries: int = 1) -> Tuple[Optional[float], Optional[float]]:

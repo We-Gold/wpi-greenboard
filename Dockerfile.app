@@ -33,6 +33,8 @@ COPY --from=builder --chown=app:app /app /app
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
 
+WORKDIR /app
+
 EXPOSE 8501
 
-CMD ["streamlit", "run", "app/src/greenboard/ui/🏆 Leaderboard.py"]
+CMD ["streamlit", "run", "src/greenboard/ui/1_🏆_Leaderboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
