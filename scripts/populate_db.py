@@ -39,7 +39,7 @@ def get_db_connection():
                 dbname=os.getenv("POSTGRES_DB"),
                 user=os.getenv("POSTGRES_USER"),
                 password=os.getenv("POSTGRES_PASSWORD"),
-                host="db"
+                host="db",
             )
             print("Successfully connected to the database.")
             return conn
