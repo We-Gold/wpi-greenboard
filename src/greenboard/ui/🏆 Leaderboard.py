@@ -19,16 +19,15 @@ viz_options = ["Table", "Bar Chart"]
 viz_mode = st.sidebar.selectbox("Visualization", viz_options, index=0)
 
 # View mode dropdown
-view_options = ["By Student", "By Major"]
+view_options = ["By Student", "By Major", "By Class Year"]
 view_mode = st.sidebar.selectbox("View Mode", view_options, index=0)  # Default to "By Student"
-group_by_major = (view_mode == "By Major")
 
 # Number of entries dropdown
 entries_options = [5, 10, 15, 20, 25]
 num_entries = st.sidebar.selectbox("Entries per page", entries_options, index=1)  # Default to 10
 
 # Display the leaderboard
-if group_by_major:
+if view_mode == "By Major":
     st.subheader("Emissions by Major (Last Month)")
 
     try:
@@ -90,6 +89,69 @@ if group_by_major:
         with col4:
             if st.button("Next →", disabled=(page >= total_pages), key="major_next", use_container_width=True):
                 st.session_state.major_page = page + 1
+                st.rerun()
+elif view_mode == "By Class Year":
+    st.subheader("Emissions by Class Year (Last Month)")
+
+    try:
+        class_stats = pd.DataFrame(requests.get(f"{API_BASE_URL}/leaderboard/class_years/").json()) 
+    except requests.exceptions.RequestException:
+        st.error("❌ Cannot connect to API")
+        class_stats = pd.DataFrame()
+
+    # Rename columns
+    class_stats = class_stats.rename(columns={
+        "rank": "Rank",
+        "class_year": "Class Year",
+        "carbon_emissions_kg": "Total Emissions (kg CO2e)"
+    })
+
+    # Pagination for class stats
+    total_classes = len(class_stats)
+    total_pages = (total_classes - 1) // num_entries + 1
+    
+    # Get current page from session state or default to 1
+    if 'class_page' not in st.session_state:
+        st.session_state.class_page = 1
+    
+    page = st.session_state.class_page
+    start_idx = (page - 1) * num_entries
+    end_idx = start_idx + num_entries
+    display_class_stats = class_stats.iloc[start_idx:end_idx].copy()
+    display_class_stats = display_class_stats.set_index("Rank")
+    
+    # Show pagination info and table
+    if total_pages > 1:
+        st.write(f"Showing class years {start_idx + 1}-{min(end_idx, total_classes)} of {total_classes}")
+
+    if viz_mode == "Table":
+        st.table(display_class_stats)
+    else:
+        chart = alt.Chart(display_class_stats.reset_index()).mark_bar().encode(
+            x=alt.X("Class Year:O", sort=None),
+            y="Total Emissions (kg CO2e)",
+            tooltip=["Rank", "Class Year", "Total Emissions (kg CO2e)"]
+        ).interactive()
+        st.altair_chart(chart, use_container_width=True)
+
+    # Page selector below the table
+    if total_pages > 1:
+        col1, col2, col3, col4, col5 = st.columns([1, 2, 3, 2, 1])
+        
+        with col2:
+            if st.button("← Previous", disabled=(page <= 1), key="class_prev", use_container_width=True):
+                st.session_state.class_page = page - 1
+                st.rerun()
+        
+        with col3:
+            new_page = st.selectbox("Page", range(1, total_pages + 1), index=page-1, key="class_page_selector", label_visibility="collapsed")
+            if new_page != st.session_state.class_page:
+                st.session_state.class_page = new_page
+                st.rerun()
+        
+        with col4:
+            if st.button("Next →", disabled=(page >= total_pages), key="class_next", use_container_width=True):
+                st.session_state.class_page = page + 1
                 st.rerun()
 else:
     st.subheader("Highest Emissions by Student (Last Month)")

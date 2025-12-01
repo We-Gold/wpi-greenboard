@@ -76,3 +76,33 @@ async def get_majors_leaderboard(db: Session = Depends(get_session)):
         })
 
     return leaderboard
+
+
+@router.get("/class_years")
+async def get_class_year_leaderboard(db: Session = Depends(get_session)):
+    """
+    Leaderboard of class years ranked by total carbon emissions (kg CO2).
+    Includes total emissions for each class year.
+    """
+    query = text("""
+        SELECT 
+            p.class_year,
+            COALESCE(SUM(pk.total_emissions_kg), 0) AS total_emissions
+        FROM persons p
+        LEFT JOIN packages pk ON p.wpi_id = pk.recipient_id
+        WHERE p.is_student = TRUE AND p.class_year IS NOT NULL
+        GROUP BY p.class_year
+        ORDER BY total_emissions DESC
+    """)
+
+    results = db.exec(query).all()
+
+    leaderboard = []
+    for rank, (class_year, emissions) in enumerate(results, start=1):
+        leaderboard.append({
+            "rank": rank,
+            "class_year": class_year,
+            "carbon_emissions_kg": round(emissions or 0, 2), 
+        })
+
+    return leaderboard
