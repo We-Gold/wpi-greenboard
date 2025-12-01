@@ -56,9 +56,17 @@ if lookup_button and lookup_tracking:
                         st.write(f"**Service Type:** {lookup_data.get('service_type', 'N/A')}")
                         st.write(f"**Weight:** {lookup_data.get('weight_kg', 0):.2f} kg")
                     with col2:
-                        st.write(f"**Distance:** {lookup_data.get('distance_km', 0):.2f} km")
+                        distance_km = lookup_data.get('distance_km', 0)
+                        is_default = lookup_data.get('is_default_distance', False)
+                        distance_display = f"{distance_km:.2f} km"
+                        if is_default:
+                            distance_display += " ⚠️ (estimated)"
+                        st.write(f"**Distance:** {distance_display}")
                         st.write(f"**Emissions:** {lookup_data.get('total_emissions_kg', 0):.4f} kg CO2e")
                         st.write(f"**Transport Mode:** {lookup_data.get('transport_mode', 'N/A')}")
+                        
+                        if is_default:
+                            st.warning("⚠️ Distance is an estimate (geocoding failed). Actual distance may vary.")
                     
                     if lookup_data.get('origin'):
                         st.write(f"**Origin:** {lookup_data['origin'].get('city', '')}, {lookup_data['origin'].get('state', '')} {lookup_data['origin'].get('postal_code', '')}")

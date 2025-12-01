@@ -232,6 +232,10 @@ async def lookup_tracking_number(
         
         package_info = result.package_info
         
+        # Check if distance was calculated or used default
+        # Default distances are: 1200 (ground), 1500 (air), 5000 (international)
+        is_default_distance = result.distance_km in [1200, 1500, 5000]
+        
         # Extract information for package creation
         return {
             "tracking_number": package_info.tracking_number,
@@ -240,6 +244,7 @@ async def lookup_tracking_number(
             "service_code": package_info.service_code,
             "weight_kg": result.weight_used_kg,
             "distance_km": result.distance_km,
+            "is_default_distance": is_default_distance,
             "total_emissions_kg": result.total_emissions_kg,
             "transport_mode": result.transport_mode,
             "origin": {
