@@ -15,9 +15,9 @@ Note: This is NOT an official WPI application.
 
 ### Demo Videos
 
-<iframe allowfullscreen="allowfullscreen" src="https://drive.google.com/file/d/1pKzOz-jFmtVVJCR2oNqMlbpQ4OLl4k4Y/preview" width="640" height="480"></iframe>
+Primary Demo Video: https://drive.google.com/file/d/1pKzOz-jFmtVVJCR2oNqMlbpQ4OLl4k4Y/preview
 
-<iframe allowfullscreen="allowfullscreen" src="https://drive.google.com/file/d/1WbYMLhezAD10zno0leaFz2j0cr24_n7A/preview" width="640" height="480"></iframe>
+Carrier Statistics Demo: https://drive.google.com/file/d/1WbYMLhezAD10zno0leaFz2j0cr24_n7A/preview
 
 
 ## Development
