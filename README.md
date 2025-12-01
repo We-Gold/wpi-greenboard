@@ -13,6 +13,13 @@ Note: This is NOT an official WPI application.
 - Surbhi Kapoor
 - Willem van Oosterum
 
+### Demo Videos
+
+<iframe allowfullscreen="allowfullscreen" src="https://drive.google.com/file/d/1pKzOz-jFmtVVJCR2oNqMlbpQ4OLl4k4Y/preview" width="640" height="480"></iframe>
+
+<iframe allowfullscreen="allowfullscreen" src="https://drive.google.com/file/d/1WbYMLhezAD10zno0leaFz2j0cr24_n7A/preview" width="640" height="480"></iframe>
+
+
 ## Development
 
 We are using `uv` for managing the Python project. 
