@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import requests
 import os
+import altair as alt
+
+st.set_page_config(page_title="WPI Greenboard", page_icon="🏆")
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
@@ -10,6 +13,10 @@ st.markdown("2025-2026 Academic Year")
 
 # Add controls for filtering, number of entries per page, pagination, and search
 st.sidebar.header("Leaderboard Controls")
+
+# Visualization mode dropdown
+viz_options = ["Table", "Bar Chart"]
+viz_mode = st.sidebar.selectbox("Visualization", viz_options, index=0)
 
 # View mode dropdown
 view_options = ["By Student", "By Major"]
@@ -22,7 +29,7 @@ num_entries = st.sidebar.selectbox("Entries per page", entries_options, index=1)
 
 # Display the leaderboard
 if group_by_major:
-    st.subheader("Emissions by Major (Oct 2025)")
+    st.subheader("Emissions by Major (Last Month)")
 
     try:
         major_stats = pd.DataFrame(requests.get(f"{API_BASE_URL}/leaderboard/majors/").json()) 
@@ -55,7 +62,15 @@ if group_by_major:
     if total_pages > 1:
         st.write(f"Showing majors {start_idx + 1}-{min(end_idx, total_majors)} of {total_majors}")
 
-    st.table(display_major_stats)
+    if viz_mode == "Table":
+        st.table(display_major_stats)
+    else:
+        chart = alt.Chart(display_major_stats.reset_index()).mark_bar().encode(
+            x=alt.X("Major", sort=None),
+            y="Total Emissions (kg CO2e)",
+            tooltip=["Rank", "Major", "Total Emissions (kg CO2e)"]
+        ).interactive()
+        st.altair_chart(chart, use_container_width=True)
 
     # Page selector below the table
     if total_pages > 1:
@@ -77,7 +92,7 @@ if group_by_major:
                 st.session_state.major_page = page + 1
                 st.rerun()
 else:
-    st.subheader("Highest Emissions by Student (Oct 2025)")
+    st.subheader("Highest Emissions by Student (Last Month)")
 
     try:
         df = pd.DataFrame(requests.get(f"{API_BASE_URL}/leaderboard/students/").json()) 
@@ -129,42 +144,50 @@ else:
     if total_pages > 1:
         st.write(f"Showing students {start_idx + 1}-{min(end_idx, total_students)} of {total_students}")
 
-    # Render table-like rows where clicking the student's name navigates to a details page
-    # We'll render each row as columns with a clickable button so we can set query params
-    st.write("")
-    # Header row
-    c_rank, c_name, c_emissions, c_action = st.columns([1, 4, 3, 2])
-    # c_rank, c_name, c_major, c_emissions, c_action = st.columns([1, 4, 3, 3, 2])
-    c_rank.markdown("**Rank**")
-    c_name.markdown("**Name**")
-    # c_major.markdown("**Major**")
-    c_emissions.markdown("**Carbon Emissions (kg CO2e)**")
-    c_action.markdown("**Details**")
-
-    for idx, row in display_df.reset_index().iterrows():
-        rank = row["Rank"]
-        name = row.get("Name", "")
-        # major = row.get("Major", "")
-        emissions = row.get("Carbon Emissions (kg CO2e)", "")
-
+    if viz_mode == "Table":
+        # Render table-like rows where clicking the student's name navigates to a details page
+        # We'll render each row as columns with a clickable button so we can set query params
+        st.write("")
+        # Header row
         c_rank, c_name, c_emissions, c_action = st.columns([1, 4, 3, 2])
         # c_rank, c_name, c_major, c_emissions, c_action = st.columns([1, 4, 3, 3, 2])
-        c_rank.write(rank)
-        c_name.write(name)
-        # c_major.write(major)
-        c_emissions.write(emissions)
+        c_rank.markdown("**Rank**")
+        c_name.markdown("**Name**")
+        # c_major.markdown("**Major**")
+        c_emissions.markdown("**Carbon Emissions (kg CO2e)**")
+        c_action.markdown("**Details**")
 
-        # Provide an explicit "View" button in the action column for clarity/accessibility
-        action_key = f"student_view_{rank}_{idx}"
-        if c_action.button("View", key=action_key):
-            # Set session storage variables for the selected student
-            st.session_state.selected_student = {
-                "rank": rank,
-                "name": name,
-                # "major": major,
-                "wpi_id": row.get("wpi_id", None)
-            }
-            st.switch_page("pages/details.py")
+        for idx, row in display_df.reset_index().iterrows():
+            rank = row["Rank"]
+            name = row.get("Name", "")
+            # major = row.get("Major", "")
+            emissions = row.get("Carbon Emissions (kg CO2e)", "")
+
+            c_rank, c_name, c_emissions, c_action = st.columns([1, 4, 3, 2])
+            # c_rank, c_name, c_major, c_emissions, c_action = st.columns([1, 4, 3, 3, 2])
+            c_rank.write(rank)
+            c_name.write(name)
+            # c_major.write(major)
+            c_emissions.write(emissions)
+
+            # Provide an explicit "View" button in the action column for clarity/accessibility
+            action_key = f"student_view_{rank}_{idx}"
+            if c_action.button("View", key=action_key):
+                # Set session storage variables for the selected student
+                st.session_state.selected_student = {
+                    "rank": rank,
+                    "name": name,
+                    # "major": major,
+                    "wpi_id": row.get("wpi_id", None)
+                }
+                st.switch_page("pages/📦 Details.py")
+    else:
+        chart = alt.Chart(display_df.reset_index()).mark_bar().encode(
+            x=alt.X("Name", sort=None),
+            y="Carbon Emissions (kg CO2e)",
+            tooltip=["Rank", "Name", "Carbon Emissions (kg CO2e)"]
+        ).interactive()
+        st.altair_chart(chart, use_container_width=True)
     
     # Page selector below the table
     if total_pages > 1:
