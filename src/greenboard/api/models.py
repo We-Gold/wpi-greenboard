@@ -25,7 +25,7 @@ class Carrier(SQLModel, table=True):
 
 
 class Emission(SQLModel, table=True):
-    __tablename__ = "emmissions"  # Keeping typo from schema
+    __tablename__ = "emissions"  # Fixed: database table is "emissions" (not "emmissions")
     
     service_type: str = Field(primary_key=True, max_length=50)
     emission_factor: Optional[float] = None
@@ -40,7 +40,7 @@ class Package(SQLModel, table=True):
     package_id: Optional[int] = Field(default=None, primary_key=True)
     carrier_id: Optional[int] = Field(default=None, foreign_key="carriers.carrier_id")
     tracking_number: str = Field(max_length=255)
-    service_type: Optional[str] = Field(default=None, foreign_key="emmissions.service_type", max_length=50)
+    service_type: Optional[str] = Field(default=None, foreign_key="emissions.service_type", max_length=50)
     date_shipped: Optional[datetime] = None
     total_emissions_kg: Optional[float] = None
     distance_traveled: Optional[float] = None
