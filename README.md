@@ -19,6 +19,8 @@ Primary Demo Video: https://drive.google.com/file/d/1pKzOz-jFmtVVJCR2oNqMlbpQ4OL
 
 Carrier Statistics Demo: https://drive.google.com/file/d/1WbYMLhezAD10zno0leaFz2j0cr24_n7A/preview
 
+Add Package Demo: https://drive.google.com/file/d/10Dit-Oafi9MOzcXofP1Qni_GiDoxT1Nz/preview
+
 
 ## Development
 
