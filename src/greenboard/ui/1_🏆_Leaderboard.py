@@ -242,7 +242,7 @@ else:
                     # "major": major,
                     "wpi_id": row.get("wpi_id", None)
                 }
-                st.switch_page("pages/📦 Details.py")
+                st.switch_page("pages/3_📦_Details.py")
     else:
         chart = alt.Chart(display_df.reset_index()).mark_bar().encode(
             x=alt.X("Name", sort=None),

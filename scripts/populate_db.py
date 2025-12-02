@@ -10,23 +10,43 @@ import sys
 COLORS = [
     "Red", "Blue", "Green", "Yellow", "Purple", "Orange", "Black", "White",
     "Pink", "Brown", "Gray", "Cyan", "Magenta", "Teal", "Navy", "Olive",
-    "Maroon", "Lime", "Aqua", "Silver"
+    "Maroon", "Lime", "Aqua", "Silver", "Gold", "Bronze", "Copper", "Platinum",
+    "Coral", "Salmon", "Crimson", "Scarlet", "Burgundy", "Indigo", "Violet",
+    "Lavender", "Turquoise", "Emerald", "Jade", "Amber", "Ruby", "Sapphire",
+    "Topaz", "Garnet", "Pearl", "Ivory", "Beige", "Tan", "Khaki", "Mint",
+    "Peach", "Apricot", "Rose", "Cherry", "Berry", "Wine", "Charcoal", "Slate"
 ]
 
 # List of animals for random last names, as provided
 ANIMALS = [
-    "alligator", "anteater", "armadillo", "auroch", "axolotl", "badger", "bat",
-    "bear", "beaver", "blobfish", "buffalo", "camel", "chameleon", "cheetah",
-    "chipmunk", "chinchilla", "chupacabra", "cormorant", "coyote", "crow",
-    "dingo", "dinosaur", "dog", "dolphin", "dragon", "duck", "dumbo octopus",
-    "elephant", "ferret", "fox", "frog", "giraffe", "goose", "gopher",
-    "grizzly", "hamster", "hedgehog", "hippo", "hyena", "jackal", "jackalope",
-    "ibex", "ifrit", "iguana", "kangaroo", "kiwi", "koala", "kraken", "lemur",
-    "leopard", "liger", "lion", "llama", "manatee", "mink", "monkey", "moose",
-    "narwhal", "nyan cat", "orangutan", "otter", "panda", "penguin",
-    "platypus", "python", "pumpkin", "quagga", "quokka", "rabbit", "raccoon",
-    "rhino", "sheep", "shrew", "skunk", "slow loris", "squirrel", "tiger",
-    "turtle", "unicorn", "walrus", "wolf", "wolverine", "wombat",
+    "albatross", "alligator", "anteater", "antelope", "armadillo", "auroch", "axolotl",
+    "baboon", "badger", "barracuda", "bat", "bear", "beaver", "bison", "blobfish",
+    "boar", "bobcat", "bonobo", "buffalo", "buzzard", "camel", "capybara", "caribou",
+    "cassowary", "chameleon", "cheetah", "chinchilla", "chipmunk", "chupacabra", "cobra",
+    "condor", "cormorant", "cougar", "coyote", "crane", "crocodile", "crow", "deer",
+    "dingo", "dinosaur", "dodo", "dog", "dolphin", "dragon", "duck", "dumbo octopus",
+    "eagle", "echidna", "elephant", "elk", "falcon", "ferret", "flamingo", "fox",
+    "frog", "gazelle", "gecko", "gerbil", "giraffe", "gnu", "goose", "gopher",
+    "gorilla", "goshawk", "grizzly", "guppy", "hamster", "hare", "hawk", "hedgehog",
+    "heron", "hippo", "hornet", "horse", "hummingbird", "hyena", "ibex", "ifrit",
+    "iguana", "jackal", "jackalope", "jaguar", "jellyfish", "kangaroo", "kestrel",
+    "kingfisher", "kite", "kiwi", "koala", "kraken", "ladybug", "lark", "leech",
+    "lemur", "leopard", "liger", "lion", "lizard", "llama", "lobster", "lynx",
+    "macaw", "maggot", "mallard", "mammoth", "manatee", "mantis", "marlin", "meerkat",
+    "mink", "mole", "mongoose", "monkey", "moose", "moth", "mouse", "mule",
+    "narwhal", "newt", "nightingale", "nyan cat", "ocelot", "octopus", "opossum",
+    "orangutan", "orca", "oriole", "osprey", "ostrich", "otter", "owl", "ox",
+    "oyster", "panda", "panther", "parrot", "peacock", "pelican", "penguin",
+    "pheasant", "pigeon", "piranha", "platypus", "porcupine", "porpoise", "possum",
+    "prawn", "puffin", "puma", "pumpkin", "python", "quagga", "quail", "quetzal",
+    "quokka", "rabbit", "raccoon", "rat", "raven", "ray", "reindeer", "rhino",
+    "robin", "rooster", "salamander", "salmon", "scorpion", "seal", "shark", "sheep",
+    "shrew", "shrimp", "skunk", "sloth", "slow loris", "snail", "snake", "sparrow",
+    "spider", "squid", "squirrel", "stallion", "starfish", "stingray", "stork", "swan",
+    "tapir", "tarantula", "termite", "tern", "thrush", "tiger", "toad", "toucan",
+    "trout", "tuna", "turkey", "turtle", "unicorn", "urchin", "vulture", "walrus",
+    "wasp", "weasel", "whale", "wildcat", "wildebeest", "wolf", "wolverine", "wombat",
+    "woodpecker", "yak", "zebra", "zebu", "zephyr"
 ]
 
 
