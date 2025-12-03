@@ -94,7 +94,7 @@ if not df.empty:
             col_details1, col_details2 = st.columns(2)
             
             with col_details1:
-                st.metric("Distance", row['distance_traveled'])
+                st.metric("Distance", f"{row['distance_traveled']:.2f} miles")
                 st.metric("Carrier", row['carrier_name'])
             
             with col_details2:
