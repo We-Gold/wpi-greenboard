@@ -54,7 +54,7 @@ CREATE TABLE packages (
     CONSTRAINT packages_recipient_fk
         FOREIGN KEY (recipient_id)
         REFERENCES persons(wpi_id)
-        ON DELETE SET NULL  -- keep package if an recipient row is deleted
+        ON DELETE CASCADE  -- delete package if an recipient row is deleted
         ON UPDATE CASCADE,
     CONSTRAINT carrier_id_fk
         FOREIGN KEY (carrier_id)
@@ -81,7 +81,7 @@ CREATE TABLE transactions (
     CONSTRAINT transactions_package_fk
         FOREIGN KEY (package_id)
         REFERENCES packages(package_id)
-        ON DELETE RESTRICT  -- block deleting a package if transactions exist
+        ON DELETE CASCADE  -- allow deleting a package if transactions exist
         ON UPDATE CASCADE,
     CONSTRAINT transactions_worker_fk
         FOREIGN KEY (worker_id)
