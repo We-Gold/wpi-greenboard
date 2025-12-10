@@ -13,6 +13,12 @@ Note: This is NOT an official WPI application.
 - Surbhi Kapoor
 - Willem van Oosterum
 
+### Report and Presentation
+
+Report: https://docs.google.com/document/d/1EOGWwAFm53663z2HCClxzTVAIwcJ3VFSNSnHkpRXNFM/edit?usp=sharing
+
+Presentation: https://docs.google.com/presentation/d/1_jIOICF67aSgnaSm4fm3IwPEa1fRt-5s/edit?usp=sharing&ouid=112144393606313004477&rtpof=true&sd=true
+
 ### Demo Videos
 
 Primary Demo Video: https://drive.google.com/file/d/1pKzOz-jFmtVVJCR2oNqMlbpQ4OLl4k4Y/preview
